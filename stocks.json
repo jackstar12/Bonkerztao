@@ -1,0 +1,12 @@
+[
+    {
+        "symbol": "BTCUSDT",
+        "dies": "das",
+        "test": 3
+    },
+    {
+        "symbol": "ETHUSDT",
+        "dies": "anders",
+        "test": 5
+    }
+]
