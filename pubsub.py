@@ -35,12 +35,5 @@ async def execute():
     await redis.close()
 
 
-def main():
-    """
-    Einstiegspunkt für unser Skript
-    """
-
-    asyncio.run(execute())
-
 if __name__ == "__main__":
-    main()
+    asyncio.run(execute())

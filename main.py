@@ -14,8 +14,6 @@ from redis import redis, Namespace
 STOCKS = ['eth']
 
 
-
-
 def open_order_update_main(stock: str):
     stock_config = importlib.import_module(f'bots.{stock}.config')
 

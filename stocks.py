@@ -1,1 +1,0 @@
-STOCKS = ['btc', 'eth']

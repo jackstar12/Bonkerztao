@@ -1,6 +1,21 @@
 import click
 
 
+import asyncio
+
+import aioredis
+from messenger import Messenger, Channel
+
+
+async def execute(symbol: ):
+    redis = aioredis.from_url('redis://localhost')
+    messenger = Messenger(redis)
+
+    # CLI (manuell soll gestartet werden)
+    # Publish = Veröffentlichen / Senden
+    await messenger.pub_channel(Channel.START, obj={'symbol': 'BTC'})
+
+
 @click.group()
 def cli():
     pass
@@ -16,6 +31,8 @@ def cli():
     type=click.STRING
 )
 def set(symbol, state):
+    if state == 1:
+        asyncio.run(execute())
 
     print(f'Enabling {symbol}')
 
