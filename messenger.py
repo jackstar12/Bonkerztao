@@ -73,4 +73,5 @@ class Messenger:
 
     async def pub_channel(self, channel: Channel, obj: object, channel_id: int = None):
         ch = join_args(channel.value, channel_id)
+        print(ch)
         return await self._redis.publish(ch, json.dumps(obj))
