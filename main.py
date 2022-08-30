@@ -36,6 +36,9 @@ async def listen():
 def wrap(callback):
     @wraps(callback)
     def wrapper(event: dict):
+        """
+        Decodiert event daten bevor der callback ausgeführt wird
+        """
         print(f'Redis Event: {event=}')
         data = json.loads(event['data'].decode('utf-8'))
         callback(data)
