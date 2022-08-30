@@ -10,8 +10,6 @@ import asyncio
 import logging
 import aioredis
 
-from messenger import Messenger
-
 redis = aioredis.from_url('redis://localhost')
 pubsub = redis.pubsub()
 

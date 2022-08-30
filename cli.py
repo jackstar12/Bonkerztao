@@ -6,7 +6,6 @@ import click
 import asyncio
 
 import aioredis
-from messenger import Messenger
 
 
 STATUS = "status"
