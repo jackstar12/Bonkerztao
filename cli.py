@@ -1,19 +1,37 @@
+import json
+
 import click
 
 
 import asyncio
 
 import aioredis
-from messenger import Messenger, Channel
+from messenger import Messenger
+
+
+STATUS = "status"
+ONLINE = "online"
+
+
+INDEX = "index"
+STOP = "stop"
+START = "start"
+
+redis = aioredis.from_url('redis://localhost')
+
+
+async def pub_channel(channel, obj: object):
+    print('PUB: ', channel, obj)
+    return await redis.publish(channel, json.dumps(obj))
 
 
 async def execute(symbol: str):
-    redis = aioredis.from_url('redis://localhost')
-    messenger = Messenger(redis)
-    print('hi')
     # CLI (manuell soll gestartet werden)
     # Publish = Veröffentlichen / Senden
-    await messenger.pub_channel(Channel.START, obj={'symbol': symbol})
+    test = await pub_channel(START, obj={'symbol': symbol})
+    print(test)
+    await asyncio.sleep(1)
+    await redis.close()
 
 
 @click.group()

@@ -8,14 +8,8 @@ from typing import Dict
 from aioredis import Redis
 
 
-class Channel(Enum):
-    INDEX = "index"
-    STOP = "stop"
-    START = "start"
-
-
-def join_args(*args, denominator=':'):
-    return denominator.join([str(arg.value if isinstance(arg, Enum) else arg) for arg in args if arg])
+def join_args(*args):
+    return ':'.join([str(arg) for arg in args if arg])
 
 
 class Messenger:
@@ -26,15 +20,15 @@ class Messenger:
         self._listening = False
         self._logger = logging.getLogger('Messenger')
 
-    def _wrap(self, coro, rcv_event=False):
-        @wraps(coro)
+    def _wrap(self, callback, rcv_event=False):
+        @wraps(callback)
         def wrapper(event: Dict, *args, **kwargs):
             self._logger.info(f'Redis Event: {event=} {args=} {kwargs=}')
             if rcv_event:
                 data = event
             else:
                 data = json.loads(event['data'].decode('utf-8'))
-            coro(data)
+            callback(data)
 
         return wrapper
 
@@ -43,35 +37,22 @@ class Messenger:
         async for msg in self._pubsub.listen():
             logging.info(f'MSG {msg}')
 
-    async def sub(self, pattern=False, **kwargs):
-        if pattern:
-            await self._pubsub.psubscribe(**kwargs)
-        else:
-            await self._pubsub.subscribe(**kwargs)
+    async def sub(self, **kwargs):
+        await self._pubsub.subscribe(**kwargs)
         if not self._listening:
             self._listening = True
             asyncio.create_task(self.listen())
 
-    async def unsub(self, channel: str, is_pattern=False):
-        if is_pattern:
-            await self._pubsub.punsubscribe(channel)
-        else:
-            await self._pubsub.unsubscribe(channel)
-
-    async def sub_channel(self, category: Channel, channel_id: int = None, callback = None,
-                          pattern=False):
-        channel = join_args(category.value, channel_id)
-        if pattern:
-            channel += '*'
+    async def sub_channel(self, channel, channel_id: int = None, callback = None):
+        channel = join_args(channel, channel_id)
         kwargs = {channel: self._wrap(callback)}
         logging.info(f'Sub: {kwargs}')
-        await self.sub(pattern=pattern, **kwargs)
+        await self.sub(**kwargs)
 
-    async def unsub_channel(self, category: Channel, channel_id: int = None, pattern=False):
-        channel = join_args(category.value, channel_id)
-        await self.unsub(channel, pattern)
+    async def unsub_channel(self, channel, channel_id: int = None):
+        channel = join_args(channel.value, channel_id)
+        await self._pubsub.unsubscribe(channel)
 
-    async def pub_channel(self, channel: Channel, obj: object, channel_id: int = None):
-        ch = join_args(channel.value, channel_id)
-        print(ch)
+    async def pub_channel(self, channel, obj: object, channel_id: int = None):
+        ch = join_args(channel, channel_id)
         return await self._redis.publish(ch, json.dumps(obj))

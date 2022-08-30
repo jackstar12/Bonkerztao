@@ -1,7 +1,7 @@
 import asyncio
 
 import aioredis
-from messenger import Messenger, Channel
+from messenger import Messenger
 
 
 def on_start(event: dict):
