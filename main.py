@@ -35,8 +35,8 @@ async def listen():
 
 def wrap(callback):
     @wraps(callback)
-    def wrapper(event: dict, *args, **kwargs):
-        print(f'Redis Event: {event=} {args=} {kwargs=}')
+    def wrapper(event: dict):
+        print(f'Redis Event: {event=}')
         data = json.loads(event['data'].decode('utf-8'))
         callback(data)
     return wrapper
