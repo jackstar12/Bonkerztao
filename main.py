@@ -28,15 +28,6 @@ def join_args(*args):
     return ':'.join([str(arg) for arg in args if arg])
 
 
-def _wrap(self, callback):
-    @wraps(callback)
-    def wrapper(event: dict, *args, **kwargs):
-        self._logger.info(f'Redis Event: {event=} {args=} {kwargs=}')
-        data = json.loads(event['data'].decode('utf-8'))
-        callback(data)
-
-    return wrapper
-
 async def listen():
     async for _ in pubsub.listen():
         pass
