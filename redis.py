@@ -6,3 +6,4 @@ redis = aioredis.from_url('redis://localhost')
 
 class Namespace(Enum):
     STATUS = "status"
+    ONLINE = "online"

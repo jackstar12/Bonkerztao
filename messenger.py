@@ -14,8 +14,8 @@ class Channel(Enum):
     START = "start"
 
 
-def join_args(*args):
-    return ':'.join(str(arg) for arg in args if arg)
+def join_args(*args, denominator=':'):
+    return denominator.join([str(arg.value if isinstance(arg, Enum) else arg) for arg in args if arg])
 
 
 class Messenger:

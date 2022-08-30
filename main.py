@@ -26,7 +26,9 @@ async def watch(executor, stock: str):
     while True:
         print(f'Starting stock {stock}')
 
-        #await redis.set(join_args(Namespace.STATUS), 1)
+        await redis.set(join_args(Namespace.STATUS, stock), 1)
+        await redis.sadd(join_args(Namespace.ONLINE), stock)
+
         loop = asyncio.get_running_loop()
         result = await loop.run_in_executor(executor, open_order_update_main, stock)
 
