@@ -1,7 +1,6 @@
 import asyncio
 
 import aioredis
-from messenger import Messenger
 
 
 def on_start(event: dict):
@@ -15,7 +14,6 @@ async def listen(pubsub):
 
 async def execute():
     redis = aioredis.from_url('redis://localhost')
-    messenger = Messenger(redis)
 
     result = await redis.ping()
     if not result:
