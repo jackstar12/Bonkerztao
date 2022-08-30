@@ -28,7 +28,6 @@ async def execute(symbol: str):
     # CLI (manuell soll gestartet werden)
     # Publish = Veröffentlichen / Senden
     test = await pub_channel(START, obj={'symbol': symbol})
-    print(test)
     await asyncio.sleep(1)
     await redis.close()
 
