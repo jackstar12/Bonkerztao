@@ -28,29 +28,6 @@ def join_args(*args):
     return ':'.join([str(arg) for arg in args if arg])
 
 
-async def listen():
-    async for _ in pubsub.listen():
-        pass
-
-
-def wrap(callback):
-    @wraps(callback)
-    def wrapper(event: dict):
-        """
-        Decodiert event daten bevor der callback ausgeführt wird
-        """
-        print(f'Redis Event: {event=}')
-        data = json.loads(event['data'].decode('utf-8'))
-        callback(data)
-    return wrapper
-
-
-async def sub_channel(channel, callback=None):
-    subscription = {channel: wrap(callback)}
-    print(f'Sub: {subscription}')
-    await pubsub.subscribe(**subscription)
-
-
 def open_order_update_main(stock: str):
     stock_config = importlib.import_module(f'bots.{stock}.config')
 
@@ -103,11 +80,21 @@ async def execute():
                 )
             )
 
-        await sub_channel(START, callback=on_start)
+        await pubsub.subscribe(START)
+
+        async def listen_pubsub():
+            async for event in pubsub.listen():
+                print(f'Redis Event: {event=}')
+                if event['type'] == 'message':
+                    data = json.loads(event['data'].decode())
+
+                    channel = event['channel'].decode()
+                    if channel == START:
+                        on_start(data)
 
         # Höre auf redis nachrichten
         asyncio.create_task(
-            listen()
+            listen_pubsub()
         )
 
         for stock in STOCKS:
