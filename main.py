@@ -22,9 +22,12 @@ INDEX = "index"
 STOP = "stop"
 START = "start"
 
+START_ALL = "start_all"
+STOP_ALL = "stop_all"
+
 
 def join_args(*args):
-    return ':'.join([str(arg) for arg in args if arg])
+    return ':'.join(args)
 
 
 def open_order_update_main(stock: str):
@@ -84,6 +87,9 @@ async def execute():
             )
 
         await pubsub.subscribe(START)
+        await pubsub.subscribe(START_ALL)
+        await pubsub.subscribe(STOP)
+        await pubsub.subscribe(STOP_ALL)
 
         async def listen():
             async for event in pubsub.listen():
