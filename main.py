@@ -74,16 +74,14 @@ async def execute():
             # except ImportError:
             #     pass  # Nix custom
 
-            asyncio.create_task(
-                watch(executor, symbol)
-            )
+            asyncio.create_task(watch(executor, symbol))
 
         await pubsub.subscribe(START)
         await pubsub.subscribe(START_ALL)
         await pubsub.subscribe(STOP)
         await pubsub.subscribe(STOP_ALL)
 
-        async def listen():
+        async def listen_pubsub():
             async for event in pubsub.listen():
                 print(f'Redis Event: {event=}')
                 if event['type'] == 'message':
@@ -99,7 +97,7 @@ async def execute():
                         pass  # STOP ALL
 
         # Höre auf redis nachrichten
-        await listen()
+        await listen_pubsub()
 
 
 def main():
