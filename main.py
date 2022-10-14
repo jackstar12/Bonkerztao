@@ -1,7 +1,6 @@
 import importlib
 import concurrent.futures
 import json
-from functools import wraps
 
 import click
 import time
@@ -82,42 +81,19 @@ async def execute():
 
         await pubsub.subscribe(START)
 
-        async def listen_pubsub():
+        async def listen():
             async for event in pubsub.listen():
                 print(f'Redis Event: {event=}')
                 if event['type'] == 'message':
                     data = json.loads(event['data'].decode())
-
                     channel = event['channel'].decode()
                     if channel == START:
                         on_start(data)
 
         # Höre auf redis nachrichten
-        asyncio.create_task(
-            listen_pubsub()
-        )
+        asyncio.create_task(listen())
 
-        for stock in STOCKS:
-            try:
-                # gleich zu import bots.btc.config
-                stock_config = importlib.import_module(f'bots.{stock}.config')
-            except ImportError:
-                logging.error(f'Stock does not exist: {stock}')
-                return
 
-            # Optional Feature: Custom Main Import
-            # try:
-            #     stock_main = importlib.import_module(f'bots.{stock}.main')
-            # except ImportError:
-            #     pass  # Nix custom
-
-            all_tasks.append(
-                asyncio.create_task(
-                    watch(executor, stock)
-                )
-            )
-            await asyncio.sleep(1)
-        await asyncio.gather(*all_tasks)
 
 
 @click.command()

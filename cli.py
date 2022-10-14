@@ -48,7 +48,7 @@ def cli():
 @cli.command()  # @cli, not @click!
 @click.option(
     "--symbol",
-    type=click.STRING
+    type=click.STRING,
 )
 def enable(symbol):
     asyncio.run(enable_symbol(symbol))
