@@ -47,13 +47,18 @@ async def watch(executor, stock: str):
         print(f'Stock {stock} finished, restarting, Result: {result}')
 
 
+async def get_index_price(symbol: str):
+    # Hol index preis für das bestimmte symbol
+    pass
+
+
 async def execute():
     result = await redis.ping()
     if not result:
         print('REDIS CONNECTION NOT WORKING!')
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        all_tasks = []
+        all_symbols = []
 
         # Main (manager von spezifischen prozessen)
         # Subscribe = Empfangen
@@ -73,10 +78,9 @@ async def execute():
             # except ImportError:
             #     pass  # Nix custom
 
-            all_tasks.append(
-                asyncio.create_task(
-                    watch(executor, symbol)
-                )
+            all_symbols.append(symbol)
+            asyncio.create_task(
+                watch(executor, symbol)
             )
 
         await pubsub.subscribe(START)
@@ -93,10 +97,11 @@ async def execute():
         # Höre auf redis nachrichten
         asyncio.create_task(listen())
 
+        # Index schleife
+        while True:
+            pass
 
 
-
-@click.command()
 def main():
     """
     Einstiegspunkt für unser Skript
