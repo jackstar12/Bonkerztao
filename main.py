@@ -100,6 +100,12 @@ async def execute():
                     if channel == START:
                         on_start(data)
 
+                    if channel == START_ALL:
+                        pass  # START ALL
+
+                    if channel == START_ALL:
+                        pass  # STOP ALL
+
         # Höre auf redis nachrichten
         asyncio.create_task(listen())
 
