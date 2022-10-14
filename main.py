@@ -18,7 +18,6 @@ STOCKS = ['eth']
 STATUS = "status"
 
 
-INDEX = "index"
 STOP = "stop"
 START = "start"
 
@@ -30,12 +29,41 @@ def join_args(*args):
     return ':'.join(args)
 
 
-def open_order_update_main(stock: str):
-    stock_config = importlib.import_module(f'bots.{stock}.config')
+async def ob_run(stock: str):
 
-    print('moin moin from ', stock)
-    time.sleep(stock_config.SLEEP_TIME)
-    return True
+    # Auth WS
+
+    # Setup Redis pubsub
+    await pubsub.subscribe(STOP)
+    await pubsub.subscribe(STOP_ALL)
+
+    async def listen_pubsub():
+        async for event in pubsub.listen():
+            print(f'Redis Event: {event=}')
+            if event['type'] == 'message':
+                data = json.loads(event['data'].decode())
+                channel = event['channel'].decode()
+                if channel == STOP:
+                    if data['symbol'] == stock:
+                        pass  # STOP!
+                elif channel == STOP_ALL:
+                    pass
+
+    asyncio.create_task(listen_pubsub())
+
+    while True:  # Listen WS
+        msg = 'moin moin'
+        print(f'WEBSOCKET MESSAGE FROM {stock}: {msg}')
+        await asyncio.sleep(1)
+
+
+def test_ob(stock: str, config):
+    asyncio.run(ob_run(stock))
+
+
+def main_bot(stock: str):
+    stock_config = importlib.import_module(f'bots.{stock}.config')
+    test_ob(stock, stock_config)
 
 
 async def watch(executor, stock: str):
@@ -45,7 +73,7 @@ async def watch(executor, stock: str):
         await redis.set(join_args(STATUS, stock), 1)
 
         loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(executor, open_order_update_main, stock)
+        result = await loop.run_in_executor(executor, main_bot, stock)
 
         print(f'Stock {stock} finished, restarting, Result: {result}')
 
