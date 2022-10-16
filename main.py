@@ -16,7 +16,7 @@ STOCKS = ['eth']
 
 
 STATUS = "status"
-
+INDEX = "index"
 
 STOP = "stop"
 START = "start"
@@ -30,31 +30,38 @@ def join_args(*args):
 
 
 async def ob_run(stock: str):
+    # Code für einzelne Aktie
 
     # Auth WS
+
+    async def listen_ws():
+        async for msg in ws:  # Listen WS
+            msg = 'moin moin'
+            print(f'WEBSOCKET MESSAGE FROM {stock}: {msg}')
+            await asyncio.sleep(1)
+
+    task = asyncio.create_task(listen_ws())
 
     # Setup Redis pubsub
     await pubsub.subscribe(STOP)
     await pubsub.subscribe(STOP_ALL)
+    await pubsub.subscribe(join_args(INDEX, stock))
 
-    async def listen_pubsub():
-        async for event in pubsub.listen():
-            print(f'Redis Event: {event=}')
-            if event['type'] == 'message':
-                data = json.loads(event['data'].decode())
-                channel = event['channel'].decode()
-                if channel == STOP:
-                    if data['symbol'] == stock:
-                        pass  # STOP!
-                elif channel == STOP_ALL:
-                    pass
+    async for event in pubsub.listen():
+        print(f'Redis Event: {event=}')
+        if event['type'] == 'message':
+            data = json.loads(event['data'].decode())
+            channel = event['channel'].decode()
+            if channel == STOP:
+                if data['symbol'] == stock:
+                    task.cancel()  # STOP!
+                    await ws.close()
+                    close_all_orders()
+            if channel == STOP_ALL:
+                task.cancel()  # STOP!
+                await ws.close()
+                close_all_orders()
 
-    asyncio.create_task(listen_pubsub())
-
-    while True:  # Listen WS
-        msg = 'moin moin'
-        print(f'WEBSOCKET MESSAGE FROM {stock}: {msg}')
-        await asyncio.sleep(1)
 
 
 def test_ob(stock: str, config):
