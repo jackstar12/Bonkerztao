@@ -38,7 +38,6 @@ def cli():
 
 @cli.command()  # @cli, not @click!
 @click.option("--symbol", type=click.STRING, required=False)
-
 @click.option("--state", type=click.STRING)
 @click.option("--all", type=click.BOOL, required=False)
 def set(symbol, state, all):

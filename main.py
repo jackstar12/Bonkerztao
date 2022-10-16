@@ -87,22 +87,28 @@ async def execute():
         # Main (manager von spezifischen prozessen)
         # Subscribe = Empfangen
 
+        symbols_running = []
+
         def on_start(data: dict):
             symbol = data['symbol']
-            try:
-                # gleich zu import bots.btc.config
-                stock_config = importlib.import_module(f'bots.{symbol}.config')
-            except ImportError:
-                logging.error(f'Stock does not exist: {symbol}')
-                return
+            if symbol not in symbols_running:
+                try:
+                    # gleich zu import bots.btc.config
+                    stock_config = importlib.import_module(f'bots.{symbol}.config')
+                except ImportError:
+                    logging.error(f'Stock does not exist: {symbol}')
+                    return
 
-            # Optional Feature: Custom Main Import
-            # try:
-            #     stock_main = importlib.import_module(f'bots.{stock}.main')
-            # except ImportError:
-            #     pass  # Nix custom
+                # Optional Feature: Custom Main Import
+                # try:
+                #     stock_main = importlib.import_module(f'bots.{stock}.main')
+                # except ImportError:
+                #     pass  # Nix custom
 
-            asyncio.create_task(watch(executor, symbol))
+                symbols_running.append(symbol)
+                asyncio.create_task(watch(executor, symbol))
+            else:
+                print(f"{symbol} läuft schon")
 
         await pubsub.subscribe(START)
         await pubsub.subscribe(START_ALL)
